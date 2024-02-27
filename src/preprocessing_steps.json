@@ -1,0 +1,56 @@
+{
+    "clean_features_selection": {
+        "columns_to_keep": [
+            "Age",
+            "Driving_License",
+            "Region_Code",
+            "Previously_Insured",
+            "Annual_Premium",
+            "Policy_Sales_Channel",
+            "Vintage"
+        ]
+    },
+    "cleaning": {
+        "binarize": {
+            "columns": [
+                "Gender",
+                "Vehicle_Damage"
+            ],
+            "transformer": "ClassReplaceTransformer",
+            "args": [
+                {
+                    "Male": 0,
+                    "Female": 1
+                },
+                {
+                    "No": 0,
+                    "Yes": 1
+                }
+            ]
+        },
+        "discretize": {
+            "columns": [
+                "Vehicle_Age"
+            ],
+            "transformer": "ClassReplaceTransformer",
+            "args": [
+                {
+                    "< 1 Year": 0,
+                    "1-2 Year": 1,
+                    "> 2 Years": 2
+                }
+            ]
+        }
+    },
+    "feature_engineering": {
+        "ordinal_encode": {
+            "columns": [
+                "Region_Code"
+            ],
+            "transformer": "ClassReplaceTransformer",
+            "args": [
+                "Region_Code_Mapping.json"
+            ]
+        }
+    }
+}
