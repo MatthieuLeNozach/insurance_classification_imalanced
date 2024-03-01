@@ -29,3 +29,21 @@ def make_feature_mappings_file(df):
 
     with open('region_code_mapping.json', 'w') as f:
         json.dump(policy_sales_channel_mapping, f)
+        
+        
+        
+def load_dict_from_json(mapping_file_path):
+    with open(mapping_file_path, 'r') as f:
+        return json.load(f)[0]['mapping']
+
+
+    
+    
+def is_fitted(estimator):
+    try:
+        # Check if the estimators_ attribute exists
+        getattr(estimator, "estimators_")
+    except AttributeError:
+        # The model is not fitted
+        return False
+    return True

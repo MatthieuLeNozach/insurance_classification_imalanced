@@ -1,0 +1,148 @@
+{
+    "column_selection": {
+        "final_column_selection": [
+            "Age",
+            "Driving_License",
+            "Region_Code",
+            "Previously_Insured",
+            "Vehicle_Age",
+            "Vehicle_Damage",
+            "Annual_Premium",
+            "Policy_Sales_Channel"
+        ],
+        "preprocess_passthrough_1": [
+            "Age",
+            "Driving_License",
+            "Region_Code",
+            "Previously_Insured",
+            "Annual_Premium",
+            "Policy_Sales_Channel"
+        ],
+        "preprocess_passthrough_2": [
+            "Age",
+            "Driving_License",
+            "Previously_Insured",
+            "Vehicle_Age",
+            "Annual_Premium"
+        ]
+    },
+    "cleaning": {
+        "binarize_Gender": {
+            "columns": [
+                "Gender",
+                "Vehicle_Damage"
+            ],
+            "transformer": [
+                "ColumnMapper",
+                "ColumnMapper"
+            ],
+            "args": [
+                {
+                    "Male": 0,
+                    "Female": 1
+                },
+                {
+                    "No": 0,
+                    "Yes": 1
+                }
+            ]
+        },
+        "discretize_Vehicle_Age": {
+            "columns": [
+                "Vehicle_Age"
+            ],
+            "transformer": "ColumnMapper",
+            "args": [
+                {
+                    "< 1 Year": 0,
+                    "1-2 Year": 1,
+                    "> 2 Years": 2
+                }
+            ]
+        }
+    },
+    "feature_engineering": {
+        "specific_f_e": {
+            "ordinal_encode_policy": {
+                "columns": [
+                    "Policy_Sales_Channel"
+                ],
+                "transformer": "ColumnMapper",
+                "args": [
+                    {
+                        "mapping_file": "../src/policy_sales_channel_mapping.json"
+                    }
+                ]
+            },
+            "ordinal_encode_region": {
+                "columns": [
+                    "Region_Code"
+                ],
+                "transformer": "ColumnMapper",
+                "args": [
+                    {
+                        "mapping_file": "../src/region_code_mapping.json"
+                    }
+                ]
+            }
+        },
+        "general_f_e": {
+            "normalize": {
+                "transformer": "RobustScaler",
+                "args": [
+                    {}
+                ]
+            },
+            "impute": {
+                "transformer": "IterativeImputer",
+                "args": [
+                    {}
+                ]
+            },
+            "select_vat_thresh": {
+                "transformer": "VarianceThreshold",
+                "args": [
+                    {
+                        "threshold": 0.09
+                    }
+                ]
+            }
+        }
+    },
+    "model_param_grids": {
+        "logistic_regression": {
+            "LogisticRegression__penalty": [
+                "l1",
+                "l2"
+            ],
+            "LogisticRegression__C": [
+                0.001,
+                0.01,
+                0.1,
+                1,
+                10,
+                100
+            ],
+            "LogisticRegression__class_weight": [
+                null
+            ]
+        },
+        "gradient_boosting_classifier": {
+            "GradientBoostingClassifier__n_estimators": [
+                100,
+                200,
+                300
+            ],
+            "GradientBoostingClassifier__learning_rate": [
+                0.01,
+                0.1,
+                0.75
+            ],
+            "GradientBoostingClassifier__max_depth": [
+                3,
+                5,
+                7
+            ]
+        }
+    }
+}
