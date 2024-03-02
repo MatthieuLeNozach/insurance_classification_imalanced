@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tutorial</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+
+</head>
+
+<body>
+    <h1 class="text-center title">Car Insurance Cross-Selling Potential</h1>
+    <p class="text-center">
+        Use this form to find customers' eligibility on the car insurance cross-selling offer.<br> 
+        A negative answer reflects the poor responsiveness of customers sharing the same characteristics.<br>
+        Fill in the form below and click Predict to see the results.
+    </p>
+    <style>
+        body {
+            background-color: whitesmoke;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-size: 1.2em;
+        }
+        .title {
+            background-color: steelblue;
+            color: whitesmoke;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        .form-control, .btn {
+            border-radius: 0;
+        }
+        .btn-primary {
+            background-color: powderblue;
+            color: darkslategray;
+            border-color: powderblue;
+        }
+        .btn-primary:hover {
+            background-color: mistyrose;
+            border-color: mistyrose;
+        }
+    </style>
+    
+
+    <form class="p-3" action='/predict', method="post">
+        <div class="form-group">
+            <label>Gender</label><br>
+            <input type="radio" id="male" name="Gender" value="Male">
+            <label for="male">Male</label><br>
+            <input type="radio" id="female" name="Gender" value="Female">
+            <label for="female">Female</label>
+        </div>
+        <div class="form-group">
+            <label for="Age">Age</label>
+            <input class="form-control" type="number" name="Age" required>
+        </div>
+        <div class="form-group">
+            <label for="Annual_Premium">Annual Premium</label>
+            <input class="form-control" type="number" name="Annual_Premium" required>
+        </div>
+        <div class="form-group">
+            <label>Previously Insured</label><br>
+            <input type="radio" id="insured_yes" name="Previously_Insured" value="1">
+            <label for="insured_yes">Yes</label><br>
+            <input type="radio" id="insured_no" name="Previously_Insured" value="0">
+            <label for="insured_no">No</label>
+        </div>
+        <div class="form-group">
+            <label for="Vehicle_Age">Vehicle Age</label>
+            <select class="form-control" name="Vehicle_Age" required>
+                <option value="< 1 Year">< 1 Year</option>
+                <option value="1-2 Year">1-2 Year</option>
+                <option value="> 2 Years">> 2 Years</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Vehicle Damage</label><br>
+            <input type="radio" id="damage_yes" name="Vehicle_Damage" value="Yes">
+            <label for="damage_yes">Yes</label><br>
+            <input type="radio" id="damage_no" name="Vehicle_Damage" value="No">
+            <label for="damage_no">No</label>
+        </div>
+        <div class="form-group">
+            <label for="Region_Code">Region Code</label>
+            <input class="form-control" type="number" name="Region_Code" min="0" max="52" required>
+        </div>
+        <div class="form-group">
+            <label for="Policy_Sales_Channel">Policy Sales Channel</label>
+            <input class="form-control" type="number" name="Policy_Sales_Channel" min="1" max="163" step="0.1" required>
+        </div>
+        <input class="btn btn-primary mt-3" type="submit" value="Predict">
+    </form>
+
+    {% if prediction %}
+    <p class="text-center"> Eligible Customer: {{prediction['Eligible Customer']}}</p>
+    {% endif %}
+</body>
+</html>

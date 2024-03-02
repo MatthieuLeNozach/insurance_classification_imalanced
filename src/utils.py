@@ -1,5 +1,9 @@
 import pandas as pd
 import json
+import warnings
+import logging
+
+
 
 def make_feature_bin_mapping_from_impact_on_target(df, feature, target='Response', bins=2):
     """
@@ -34,8 +38,7 @@ def make_feature_mappings_file(df):
         
 def load_dict_from_json(mapping_file_path):
     with open(mapping_file_path, 'r') as f:
-        return json.load(f)[0]['mapping']
-
+        return json.load(f)
 
     
     
@@ -47,3 +50,8 @@ def is_fitted(estimator):
         # The model is not fitted
         return False
     return True
+
+
+def warn_with_log(message, category, filename, lineno, file=None, line=None):
+    log = logging.getLogger(filename)
+    log.warning(f'{message} at line {lineno}')

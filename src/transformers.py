@@ -19,6 +19,13 @@ from sklearn.linear_model import SGDClassifier, LogisticRegression
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier 
 
 
+from sklearn import set_config
+set_config(display='diagram')
+
+from sklearn import set_config
+set_config(transform_output='pandas')
+
+
 class ColumnMapper(BaseEstimator, TransformerMixin):
     def __init__(self, mapping):
         self.mapping = mapping
@@ -70,9 +77,16 @@ class ColumnNamePurger(BaseEstimator, TransformerMixin):
         X = pd.DataFrame(X)
 
         # Modify the column names
-        X.columns = [col.split('__')[-1] for col in X.columns]
+        #X.columns = [col.split('__')[-1] for col in X.columns]
+        X.columns = [str(col).split('__')[-1] for col in X.columns]
 
         return X
     
     
   
+class IntToFloatTransformer(BaseEstimator, TransformerMixin):
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        return X.astype(float)

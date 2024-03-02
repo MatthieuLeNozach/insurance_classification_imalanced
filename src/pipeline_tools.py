@@ -35,86 +35,36 @@ from sklearn.impute import IterativeImputer
 from imblearn.pipeline import Pipeline as imbPipeline
 from feature_engine.discretisation import EqualFrequencyDiscretiser
 
+from transformers import IntToFloatTransformer, ColumnNamePurger
+
+import sys
+sys.path.insert(0, '../src')
+
+from sklearn import set_config
+set_config(display='diagram')
+
+from sklearn import set_config
+set_config(transform_output='pandas')
 
 
-
-BINARY_COLUMNS = ['Driving_License', 'Previously_Insured',]
-
-
-
-
-
-
-
-
-
-
-def process_column_transformer(df):
-    binary_columns = BINARY_COLUMNS
+BINARY_COLUMNS = ['Driving_License', 'Previously_Insured',]  
     
-    binaries_pipeline = make_pipeline(
-        IterativeImputer(),
-    )
+model_columns =[
+    'Policy_Sales_Channel',
+    'Region_Code',
+    'Age',
+    'Previously_Insured',
+    'Vehicle_Age',
+    'Vehicle_Damage',
+    'Annual_Premium',
+    'Gender'
+]
 
+def generate_user_input_pipeline(train):
     gender_pipeline = make_pipeline(
         OrdinalEncoder(categories=[['Male', 'Female']]),
-        IterativeImputer(),
     )
         
-    vehicle_damage_pipeline = make_pipeline(
-        OrdinalEncoder(categories=[['No', 'Yes']]),
-        IterativeImputer(),
-    )
-
-    vehicle_age_pipeline = make_pipeline(
-        OrdinalEncoder(categories=[sorted(df['Vehicle_Age'].unique())]),
-        IterativeImputer(),
-
-    )
-
-    region_code_pipeline = make_pipeline(
-        IterativeImputer(),
-        EqualFrequencyDiscretiser(q=4)
-    )
-
-    policy_sales_channel_pipeline = make_pipeline(
-        IterativeImputer(),
-        EqualFrequencyDiscretiser(q=4)
-    )
-
-    continuous_pipeline = make_pipeline(
-        IterativeImputer(),
-        RobustScaler(),
-    )
-
-    age_pipeline = make_pipeline(
-        IterativeImputer(),
-        StandardScaler(),
-    )
-
-    column_transformer = make_column_transformer(
-        (binaries_pipeline, binary_columns),
-        (gender_pipeline, ['Gender']),
-        (vehicle_damage_pipeline, ['Vehicle_Damage']),
-        (vehicle_age_pipeline, ['Vehicle_Age']),
-        (region_code_pipeline, ['Region_Code']),
-        (policy_sales_channel_pipeline, ['Policy_Sales_Channel']),
-        (continuous_pipeline, ['Annual_Premium']),
-        (age_pipeline, ['Age']),
-    )
-
-    
-    return column_transformer
-
-
-
-
-
-def generate_balanced_pipeline(train):
-    gender_pipeline = make_pipeline(
-        OrdinalEncoder(categories=[['Male', 'Female']]),
-    )
-
     vehicle_damage_pipeline = make_pipeline(
         OrdinalEncoder(categories=[['No', 'Yes']]),
     )
@@ -124,11 +74,11 @@ def generate_balanced_pipeline(train):
     )
 
     region_code_pipeline = make_pipeline(
-        EqualFrequencyDiscretiser(q=4)
+        EqualFrequencyDiscretiser(q=4),
     )
 
     policy_sales_channel_pipeline = make_pipeline(
-        EqualFrequencyDiscretiser(q=4)
+        EqualFrequencyDiscretiser(q=4),
     )
 
     continuous_pipeline = make_pipeline(
@@ -137,6 +87,9 @@ def generate_balanced_pipeline(train):
 
     age_pipeline = make_pipeline(
         StandardScaler(),
+    )
+
+    binaries_pipeline = make_pipeline(
     )
 
     iterative_imputer = IterativeImputer()
@@ -149,33 +102,16 @@ def generate_balanced_pipeline(train):
         (policy_sales_channel_pipeline, ['Policy_Sales_Channel']),
         (continuous_pipeline, ['Annual_Premium']),
         (age_pipeline, ['Age']),
-        ('passthrough', ['Driving_License', 'Previously_Insured',]),
+        ('passthrough', ['Previously_Insured']),
+        #(binaries_pipeline, ['Previously_Insured',]),
+        
     )
 
     feature_engineering_pipeline = make_pipeline(column_transformer, 
-                                                 iterative_imputer,
-                                                 VarianceThreshold(threshold=0.1)
+                                                iterative_imputer,
+                                                VarianceThreshold(threshold=0.09),
+                                                #ColumnNamePurger()
     )
 
-    best_knn = KNeighborsClassifier(n_neighbors=7, weights='uniform', p=2)
-    best_gb = GradientBoostingClassifier(n_estimators=300, learning_rate=0.1)
-    best_sgd = SGDClassifier(alpha=0.001, learning_rate='optimal', loss='modified_huber', max_iter=1000, penalty='elasticnet')
+    return feature_engineering_pipeline
 
-    voting_clf = VotingClassifier(
-        estimators=[('GBC', best_gb), ('KNN', best_knn), ('SGD', best_sgd)],
-        voting='soft',
-        n_jobs=-1,
-        verbose=3
-    )
-
-    vc_clf_pipeline = Pipeline(steps=[
-        ('preprocessor', feature_engineering_pipeline),
-        ('classifier', voting_clf)
-    ])
-
-    imb_fe_pipeline = imbPipeline([
-        ('column_transformer', column_transformer),
-        ('variance_threshold', VarianceThreshold(threshold=0.09))
-    ])
-
-    return vc_clf_pipeline, imb_fe_pipeline
