@@ -1,51 +1,13 @@
-
 import pandas as pd
-import json
-
-from sklearn.compose import ColumnTransformer, make_column_transformer
-from sklearn.pipeline import Pipeline, FeatureUnion, make_pipeline
-from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.compose import make_column_transformer
-
-from sklearn.preprocessing import FunctionTransformer, RobustScaler, PolynomialFeatures
-from sklearn.feature_selection import VarianceThreshold
-from sklearn.preprocessing import OrdinalEncoder, LabelEncoder, StandardScaler
-
-from sklearn.experimental import enable_iterative_imputer
-from sklearn.impute import IterativeImputer
-
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import OrdinalEncoder, RobustScaler, StandardScaler
 from feature_engine.discretisation import EqualFrequencyDiscretiser
-
-from sklearn.model_selection import GridSearchCV
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import SVC
-from sklearn.linear_model import SGDClassifier, LogisticRegression
-
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier 
-
-from sklearn.pipeline import make_pipeline, Pipeline
-from sklearn.compose import make_column_transformer
-from sklearn.preprocessing import StandardScaler, OrdinalEncoder, RobustScaler
-from sklearn.feature_selection import VarianceThreshold
-from sklearn.ensemble import GradientBoostingClassifier, VotingClassifier
-from sklearn.linear_model import SGDClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
+from sklearn.feature_selection import VarianceThreshold
+from sklearn.ensemble import GradientBoostingClassifier
 from imblearn.pipeline import Pipeline as imbPipeline
-from feature_engine.discretisation import EqualFrequencyDiscretiser
-
-from transformers import IntToFloatTransformer, ColumnNamePurger
-
-import sys
-sys.path.insert(0, '../src')
-
-from sklearn import set_config
-set_config(display='diagram')
-
-from sklearn import set_config
-set_config(transform_output='pandas')
-
+from transformers import ColumnNamePurger
 
 BINARY_COLUMNS = ['Driving_License', 'Previously_Insured',]  
     

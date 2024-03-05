@@ -3,11 +3,12 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
-from sklearn.preprocessing import label_binarize
+import ipywidgets as widgets
 from sklearn.metrics import roc_curve, auc
+import scipy.stats as stats
 
-COLORS = ['#FED9CA', '#CAE1D4', '#F3E1EB', '#D6E2FE', '#FEE2D6']
-COLORS2 = ['#ff9999','#66b3ff','#99ff99','#ffcc99','#c2c2f0','#ffb3e6', '#c2f0c2']
+COLORS0 = ['#FED9CA', '#CAE1D4', '#F3E1EB', '#D6E2FE', '#FEE2D6']
+COLORS1 = ['#ff9999','#66b3ff','#99ff99','#ffcc99','#c2c2f0','#ffb3e6', '#c2f0c2']
 COLORS = px.colors.qualitative.Set3
 
 
@@ -52,7 +53,7 @@ def plot_target_pie(df, target):
 
     fig.add_trace(
         go.Pie(labels=value_counts.index, values=value_counts.values, name=target[0],
-            marker=dict(colors=COLORS2, line=dict(color='#000000', width=2)),
+            marker=dict(colors=COLORS1, line=dict(color='#000000', width=2)),
             pull=pull_values, # Use the 'pull' attribute here
             rotation=90),) # Rotate the pie chart
 
@@ -71,7 +72,6 @@ def plot_target_pie(df, target):
     
 def plot_numerical_features(df):
     col_names = ['Age', 'Annual_Premium'] # 'Vintage']
-    COLORS = px.colors.qualitative.Set3
     cols = 1
     rows = len(col_names)
     specs = [[{'type': 'xy'}] for _ in range(rows)]  # 'xy' for histograms
@@ -196,36 +196,115 @@ def plot_qqplots(df:pd.DataFrame, title=''):
     Plot QQ plots for numeric columns in a DataFrame.
     """
     
-    COLORS = px.colors.qualitative.Set3
     n_samples = min(10000, df.shape[0])  # Sample 10,000 or the total number of rows, whichever is smaller
     df_sample = df.select_dtypes(include=[np.number]).sample(n=n_samples, random_state=1)
+    print(df_sample.shape)
 
-    # Create a subplot with 2 rows and 2 columns
-    fig = make_subplots(rows=4, cols=2)
+    fig = make_subplots(rows=3, cols=3, subplot_titles=df_sample.columns)
 
     # Loop over the first 4 columns of the DataFrame
-    for i, col in enumerate(df_sample.columns[0:8]):
+    for i, col in enumerate(df_sample.columns):
         # Calculate the theoretical quantiles and order them
         theoretical_quantiles = np.sort(stats.norm.ppf((np.arange(len(df_sample[col])) + 0.5) / len(df_sample[col])))
         
         # Calculate the sample quantiles and order them
         sample_quantiles = np.sort(df_sample[col])
         
+        # Calculate row and column indices
+        row = i // 3 + 1
+        col = i % 3 + 1
+        
         fig.add_trace(go.Scatter(x=theoretical_quantiles, 
-                                 y=sample_quantiles, 
-                                 mode='markers', 
-                                 name=col, 
-                                 marker=dict(color=COLORS[i % len(COLORS)])),  # Use color from palette
-                                 row=(i//2)+1, 
-                                 col=(i%2)+1)
+                                y=sample_quantiles, 
+                                mode='markers', 
+                                name=col, 
+                                marker=dict(color=COLORS[i % len(COLORS)])),  # Use color from palette
+                                row=row, 
+                                col=col)
+        
+        # Set the title of the subplot
+
     # Update layout
     fig.update_layout(paper_bgcolor='WhiteSmoke', 
-                      height=1000, 
-                      width=800, 
-                      title_text=f"Observed quantiles vs quantiles of a normal distribution (QQ Plots) {title}")
+                    height=900, 
+                    width=800, 
+                    title_text=f"Observed quantiles vs quantiles of a normal distribution (QQ Plots) {title}")
     fig.show()
     
+
+
+def plot_contingency(feature, palette='RdBu'):
+    """
+    """
+    rownames = 'Feature Classes'
+    colnames = 'Target Classes'
+    feature_classes = feature.unique()
     
+    cm = pd.crosstab(feature, train['Response'], normalize='index', rownames=[rownames], colnames=[colnames]).round(2)
+
+    heatmap = go.Heatmap(z=cm.values, 
+                         x=cm.columns, 
+                         y=cm.index, 
+                         colorscale=palette,
+                         showscale=False)
+
+    annotations = []
+    for i, (index, row) in enumerate(cm.iterrows()):
+        for j, value in enumerate(row):
+            color  = 'white' #if value > cm.values.max() / 2 else 'black'
+            annotations.append(
+                go.layout.Annotation(text=str(value), 
+                                     x=j, 
+                                     y=i, 
+                                     showarrow=False, 
+                                     font=dict(color=color, size=16)))
+
+    fig = go.Figure(data=heatmap)
+    fig.update_layout(
+        paper_bgcolor='WhiteSmoke',
+        title=dict(
+            text=f"{feature.name}",
+            x=0.5,  # Center the title
+            font=dict(size=20)),
+        autosize=False,
+        width=600,
+        height=600,
+        annotations=annotations,
+        xaxis=dict(title=rownames, tickfont=dict(size=14), tickvals=cm.columns, ticktext=cm.columns, tickmode='array'),
+        yaxis=dict(title=colnames, tickfont=dict(size=14), tickvals=cm.index, ticktext=cm.index, tickmode='array'))
+    return fig
+    
+
+
+
+def feature_vs_response_plots(df):
+    columns = ['Gender', 'Vehicle_Damage', 'Driving_License', 'Policy_Sales_Channel', 'Region_Code', 'Vehicle_Age']
+    rows = []
+
+    for i in range(0, len(columns), 3): # Iterate over the columns in groups of three
+        row = []
+        
+        for column in columns[i:i+3]:     # Iterate over the columns in this group
+            fig = plot_contingency(df[column])
+            fig.update_layout(width=400, height=350)
+            fig_widget = go.FigureWidget(fig)
+            row.append(fig_widget) # Add the FigureWidget to the row
+        
+        row_container = widgets.HBox(row)     # Create a container for this row of plots
+        rows.append(row_container)    # Add the container to the list of rows
+
+
+    html = widgets.HTML(   # Create an HTML widget with a div that has a background color and a specific width
+        """
+        <div style="background-color: whitesmoke; width: 100%; height: 100%;">
+        </div>
+        """
+    )
+
+    title = widgets.HTML('<h2 style="text-align: center; color: black;">Contingency Plots for Features vs Response</h2>')
+
+    outer_container = widgets.VBox([title, html] + rows) # Create a container for the title, the HTML and the rows of plots
+    return outer_container
     
     
 def plot_roc_curve(y_test, y_pred, title=''):

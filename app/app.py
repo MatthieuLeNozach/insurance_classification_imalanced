@@ -1,20 +1,24 @@
-import sys
-sys.path.insert(0, '../src')
-
 from flask import Flask, request, jsonify, render_template
+from joblib import load
+import os
 import sys
 import pandas as pd
-from joblib import load
-
 from sklearn import set_config
+
+# Get the absolute path to the directory where app.py is located
+app_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct the absolute path to the joblib file
+pipeline_path = os.path.join(app_dir, '../models/user_input_preprocessing_pipeline.joblib')
+model_path = os.path.join(app_dir, '../models/vc_knn_gbc_sgd_standalone_balanced_trained.joblib')
+
+processed_pipeline = load(pipeline_path)
+model = load(model_path)
+
 set_config(display='diagram')
 set_config(transform_output='pandas')
 
-processed_pipeline = load('../models/user_input_preprocessing_pipeline.joblib')
-model = load('../models/vc_knn_gbc_sgd_standalone_balanced_trained.joblib')
-
 app = Flask(__name__)
-
 
 @app.route('/')
 def make_health_check():

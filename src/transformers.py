@@ -1,9 +1,7 @@
 
 import pandas as pd
 import json
-
 from sklearn.compose import make_column_transformer
-from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.pipeline import Pipeline
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import FunctionTransformer, RobustScaler, PolynomialFeatures
@@ -18,11 +16,8 @@ from sklearn.svm import SVC
 from sklearn.linear_model import SGDClassifier, LogisticRegression
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier 
 
-
 from sklearn import set_config
 set_config(display='diagram')
-
-from sklearn import set_config
 set_config(transform_output='pandas')
 
 
